@@ -3,10 +3,12 @@ package com.aeclarke.typewriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Iterator;
 
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +20,8 @@ import com.aeclarke.typewriter.R;
 import com.google.typography.font.sfntly.Font;
 import com.google.typography.font.sfntly.FontFactory;
 import com.google.typography.font.sfntly.Tag;
+import com.google.typography.font.sfntly.Font.MacintoshEncodingId;
+import com.google.typography.font.sfntly.Font.PlatformId;
 import com.google.typography.font.sfntly.table.core.CMap;
 import com.google.typography.font.sfntly.table.core.CMapTable;
 import com.google.typography.font.sfntly.table.core.CMapTable.CMapId;
@@ -36,12 +40,46 @@ public class MainActivity extends Activity {
 		}
 		FontFactory factory = FontFactory.getInstance();
 		Font font = null;
+		TextView contentView = (TextView) findViewById(R.id.main_content_text);
+		contentView.setMovementMethod(new ScrollingMovementMethod());
 		try {
-			font = loadFont(new File("assets/Roboto-Regular.ttf"))[0];
+			font = loadFont(new File("/system/fonts/Roboto-Regular.ttf"))[0];
 			CMapTable cmapTable = font.getTable(Tag.cmap);
-			CMap cmap = cmapTable.cmap(CMapId.MAC_ROMAN);
-			TextView contentView = (TextView) findViewById(R.id.main_content_text);
-			contentView.setText(cmapTable.toString());
+			Iterator<CMap> cmapSubtableIterator = cmapTable.iterator();
+		
+			StringBuilder stringBuilder = new StringBuilder();
+			stringBuilder.append("PlatformID/EncodingID combinations present in Roboto-Regular.ttf:");
+			stringBuilder.append("\n");
+			for (; cmapSubtableIterator.hasNext();) {
+				CMap next = cmapSubtableIterator.next();
+				stringBuilder.append(Integer.toString(next.platformId()) + " - " + Integer.toString(next.encodingId()) + "\n");
+			}
+			stringBuilder.append("\nID  Platform Description\n");
+			stringBuilder.append("0   Unicode\n");
+			stringBuilder.append("1   Macintosh\n");
+			stringBuilder.append("2   ISO [deprecated]\n");
+			stringBuilder.append("3   Windows\n");
+			stringBuilder.append("4   Custom\n");
+			stringBuilder.append("\nId Encoding Description\n");
+			stringBuilder.append("0  Unicode 1.0 semantics" + "\n" +
+								"1  Unicode 1.1 semantics" + "\n" +
+								"2  ISO/IEC 10646 semantics" + "\n" +
+								"3  Unicode 2.0 and onwards semantics, Unicode BMP only (cmap subtable formats 0, 4, 6)." + "\n" +
+								"4  Unicode 2.0 and onwards semantics, Unicode full repertoire (cmap subtable formats 0, 4, 6, 10, 12)." + "\n" +
+								"5  Unicode Variation Sequences (cmap subtable format 14)." + "\n" +
+								"6  Unicode full repertoire (cmap subtable formats 0, 4, 6, 10, 12, 13).");
+			stringBuilder.append("\n\n\nBelow are the mapped characters:\n\n");
+			
+			CMap cmap = cmapTable.cmap(CMapId.getInstance(0,3));
+			Iterator<Integer> cmapIterator = cmap.iterator();
+			for (; cmapIterator.hasNext();) {
+				int characterId = cmapIterator.next();
+				int glyphId  = cmap.glyphId(characterId);
+				
+				stringBuilder.append(Integer.toHexString(characterId) + ":" + Integer.toString(glyphId) + "\n");
+			}
+			contentView.setText(stringBuilder);			
+			
 			
 			
 //			GlyphTable glyfTable = font.getTable(Tag.glyf);
@@ -52,7 +90,7 @@ public class MainActivity extends Activity {
 //			WritableFontData writableFontData = WritableFontData.createWritableFontData(0);//newTableBuilder.data();
 //			fontData.copyTo(writableFontData);
 		} catch (IOException e) {
-			e.printStackTrace();
+			contentView.setText(e.getMessage());
 		}
 
 	}
