@@ -3,6 +3,7 @@
 	<name>TypeWriter</name>
 	<comment></comment>
 	<projects>
+		<project>sfntly-read-only</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -32,8 +33,8 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
+		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
 </projectDescription>

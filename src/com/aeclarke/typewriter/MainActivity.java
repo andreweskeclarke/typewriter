@@ -1,5 +1,9 @@
 package com.aeclarke.typewriter;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
@@ -8,6 +12,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.aeclarke.typewriter.R;
+import com.google.typography.font.sfntly.Font;
+import com.google.typography.font.sfntly.FontFactory;
+import com.google.typography.font.sfntly.Tag;
+import com.google.typography.font.sfntly.table.core.CMap;
+import com.google.typography.font.sfntly.table.core.CMapTable;
+import com.google.typography.font.sfntly.table.core.CMapTable.CMapId;
 
 public class MainActivity extends Activity {
 
@@ -16,10 +29,32 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction()
 					.add(R.id.container, new PlaceholderFragment()).commit();
 		}
+		FontFactory factory = FontFactory.getInstance();
+		Font font = null;
+		try {
+			font = loadFont(new File("assets/Roboto-Regular.ttf"))[0];
+			CMapTable cmapTable = font.getTable(Tag.cmap);
+			CMap cmap = cmapTable.cmap(CMapId.MAC_ROMAN);
+			TextView contentView = (TextView) findViewById(R.id.main_content_text);
+			contentView.setText(cmapTable.toString());
+			
+			
+//			GlyphTable glyfTable = font.getTable(Tag.glyf);
+//			ReadableFontData fontData = glyfTable.readFontData();
+//			Font.Builder fontBuilder = factory.newFontBuilder();
+//			Builder<? extends Table> newTableBuilder = fontBuilder.newTableBuilder(Tag.glyf);
+//
+//			WritableFontData writableFontData = WritableFontData.createWritableFontData(0);//newTableBuilder.data();
+//			fontData.copyTo(writableFontData);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	@Override
@@ -58,5 +93,19 @@ public class MainActivity extends Activity {
 			return rootView;
 		}
 	}
+	
+	  public static Font[] loadFont(File file) throws IOException {
+		    FontFactory fontFactory = FontFactory.getInstance();
+		    fontFactory.fingerprintFont(true);
+		    FileInputStream is = null;
+		    try {
+		      is = new FileInputStream(file);
+		      return fontFactory.loadFonts(is);
+		    } finally {
+		      if (is != null) {
+		        is.close();
+		      }
+		    }
+		  }
 
 }
